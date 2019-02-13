@@ -2,17 +2,21 @@ import React, { useState, useEffect } from "react";
 import { Comment, List, Button } from "antd";
 import moment from "moment";
 import heart from "./heart.svg";
+import crying from "./crying.svg";
 import firebase, {
   listPosts,
   deletePost,
   like,
-  getLikes
+  getLikes,
+  cry,
+  getCries
 } from "../firebase/App";
 
 export default () => {
   const [isAuth, setAuth] = useState(null);
   const [likes, setLikes] = useState({});
   const [posts, setPosts] = useState({});
+  const [cries, setCries] = useState({});
 
   const handlePostChange = value => {
     if (!value) return;
@@ -24,6 +28,11 @@ export default () => {
     setLikes(value);
   };
 
+  const handleCryChange = value => {
+    if (!value) return;
+    setCries(value);
+  };
+
   const getLikesData = () => {
     getLikes({ handleLikeChange });
   };
@@ -32,9 +41,14 @@ export default () => {
     listPosts({ handlePostChange });
   };
 
+  const getCriesData = () => {
+    getCries({ handleCryChange });
+  };
+
   useEffect(() => {
     getLikesData();
     getPostsData();
+    getCriesData();
     firebase.auth().onAuthStateChanged(function(user) {
       if (user) {
         // User is signed in.
@@ -47,6 +61,7 @@ export default () => {
   }, [isAuth]);
 
   const getData = () => {
+    console.log(cries);
     const keys = Object.keys(posts);
 
     const datas = [];
@@ -73,7 +88,19 @@ export default () => {
               cursor: "pointer"
             }}
           />,
-          <div>{likes[key]}</div>
+          <div>{likes[key]}</div>,
+          <img
+            src={crying}
+            alt="crying"
+            onClick={() => cry({ key })}
+            style={{
+              width: "25px",
+              height: "auto",
+              margin: "10px",
+              cursor: "pointer"
+            }}
+          />,
+          <div>{cries[key]}</div>
         ]
       };
       datas.push(dumb);

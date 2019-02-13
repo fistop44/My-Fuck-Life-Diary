@@ -65,4 +65,26 @@ export const getLikes = ({ handleLikeChange }) => {
     });
 };
 
+export const cry = ({ key }) => {
+  firebase
+    .database()
+    .ref(`/cries/${key}`)
+    .transaction(function(cry) {
+      // If users/ada/rank has never been set, like will be `null`.
+      if (cry) {
+        return cry + 1;
+      }
+      return 1;
+    });
+};
+
+export const getCries = ({ handleCryChange }) => {
+  firebase
+    .database()
+    .ref(`/cries`)
+    .on("value", snap => {
+      handleCryChange(snap.val());
+    });
+};
+
 export default firebase;
