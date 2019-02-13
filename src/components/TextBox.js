@@ -1,32 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { Comment, List, Button } from "antd";
 import moment from "moment";
-import firebase, { listPosts, deletePost } from "../firebase/App";
+import heart from "./heart.svg";
+import firebase, {
+  listPosts,
+  deletePost,
+  like,
+  getLikes
+} from "../firebase/App";
 
 export default () => {
-  const [data, setData] = useState([]);
   const [isAuth, setAuth] = useState(null);
+  const [likes, setLikes] = useState({});
+  const [posts, setPosts] = useState({});
 
   const handlePostChange = value => {
-    const keys = Object.keys(value);
-    const datas = [];
-    keys.forEach(key => {
-      const item = value[key];
-      const dumb = {
-        content: item.detail || "",
-        datetime: item.time || "",
-        author: item.author || "",
-        actions: [
-          isAuth ? (
-            <Button onClick={() => deletePost({ key })}>Delete</Button>
-          ) : (
-            <div />
-          )
-        ]
-      };
-      datas.push(dumb);
-    });
-    setData(datas.reverse());
+    if (!value) return;
+    setPosts(value);
+  };
+
+  const handleLikeChange = value => {
+    if (!value) return;
+    setLikes(value);
+  };
+
+  const getLikesData = () => {
+    getLikes({ handleLikeChange });
   };
 
   const getPostsData = () => {
@@ -34,6 +33,7 @@ export default () => {
   };
 
   useEffect(() => {
+    getLikesData();
     getPostsData();
     firebase.auth().onAuthStateChanged(function(user) {
       if (user) {
@@ -46,14 +46,50 @@ export default () => {
     });
   }, [isAuth]);
 
+  const getData = () => {
+    const keys = Object.keys(posts);
+
+    const datas = [];
+    keys.forEach(key => {
+      const item = posts[key];
+      const dumb = {
+        content: item.detail || "",
+        datetime: item.time || "",
+        author: item.author || "",
+        actions: [
+          isAuth ? (
+            <Button onClick={() => deletePost({ key })}>Delete</Button>
+          ) : (
+            <div />
+          ),
+          <img
+            src={heart}
+            alt="heart"
+            onClick={() => like({ key })}
+            style={{
+              width: "25px",
+              height: "auto",
+              margin: "10px",
+              cursor: "pointer"
+            }}
+          />,
+          <div>{likes[key]}</div>
+        ]
+      };
+      datas.push(dumb);
+    });
+
+    return datas.reverse();
+  };
+
   return (
     <div>
       <List
         className="comment-list"
         style={{ width: "100%", maxWidth: "600px", margin: "auto" }}
-        header={`${data.length} stories`}
+        header={`${Object.keys(posts).length} stories`}
         itemLayout="horizontal"
-        dataSource={data}
+        dataSource={getData()}
         renderItem={item => {
           return (
             <Comment

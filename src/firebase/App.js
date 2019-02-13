@@ -18,7 +18,7 @@ export const initializeApp = () => {
 export const listPosts = ({ handlePostChange }) => {
   firebase
     .database()
-    .ref("/")
+    .ref("/posts")
     .on("value", snap => {
       handlePostChange(snap.val());
     });
@@ -32,15 +32,37 @@ export const addPost = ({ detail }) => {
   };
   firebase
     .database()
-    .ref("/")
+    .ref("/posts")
     .push(data);
 };
 
 export const deletePost = ({ key }) => {
   firebase
     .database()
-    .ref(`/${key}`)
+    .ref(`/posts/${key}`)
     .remove();
+};
+
+export const like = ({ key }) => {
+  firebase
+    .database()
+    .ref(`/likes/${key}`)
+    .transaction(function(like) {
+      // If users/ada/rank has never been set, like will be `null`.
+      if (like) {
+        return like + 1;
+      }
+      return 1;
+    });
+};
+
+export const getLikes = ({ handleLikeChange }) => {
+  firebase
+    .database()
+    .ref(`/likes`)
+    .on("value", snap => {
+      handleLikeChange(snap.val());
+    });
 };
 
 export default firebase;
