@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Comment, List, Button } from "antd";
 import moment from "moment";
-import { listPosts, deletePost } from "../firebase/App";
+import firebase, { listPosts, deletePost } from "../firebase/App";
 
 export default () => {
   const [data, setData] = useState([]);
+  const [isAuth, setAuth] = useState(null);
 
   const handlePostChange = value => {
-    console.log(value);
     const keys = Object.keys(value);
     const datas = [];
     keys.forEach(key => {
@@ -16,7 +16,13 @@ export default () => {
         content: item.detail || "",
         datetime: item.time || "",
         author: item.author || "",
-        actions: [<Button onClick={() => deletePost({ key })}>Delete</Button>]
+        actions: [
+          isAuth ? (
+            <Button onClick={() => deletePost({ key })}>Delete</Button>
+          ) : (
+            <div />
+          )
+        ]
       };
       datas.push(dumb);
     });
@@ -29,7 +35,16 @@ export default () => {
 
   useEffect(() => {
     getPostsData();
-  }, []);
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (user) {
+        // User is signed in.
+        setAuth(user.displayName);
+      } else {
+        // No user is signed in.
+        setAuth(null);
+      }
+    });
+  }, [isAuth]);
 
   return (
     <div>
@@ -40,7 +55,6 @@ export default () => {
         itemLayout="horizontal"
         dataSource={data}
         renderItem={item => {
-          console.log(item);
           return (
             <Comment
               actions={item.actions}

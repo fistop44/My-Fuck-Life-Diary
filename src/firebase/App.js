@@ -1,5 +1,6 @@
 import firebase from "firebase/app";
 import "firebase/database";
+import "firebase/auth";
 import moment from "moment";
 
 export const initializeApp = () => {
@@ -25,7 +26,7 @@ export const listPosts = ({ handlePostChange }) => {
 
 export const addPost = ({ detail }) => {
   const data = {
-    author: "ziveso",
+    author: "ZivesO",
     detail,
     time: moment().toISOString()
   };
@@ -41,3 +42,5 @@ export const deletePost = ({ key }) => {
     .ref(`/${key}`)
     .remove();
 };
+
+export default firebase;
